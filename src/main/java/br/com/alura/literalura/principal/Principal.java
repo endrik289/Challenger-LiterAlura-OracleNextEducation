@@ -108,17 +108,21 @@ public class Principal {
 
     private void listarAutoresVivos() {
         System.out.println("Digite o ano para buscar autores vivos:");
-        var ano = leitura.nextInt();
-        leitura.nextLine();
+        try {
+            var ano = Integer.valueOf(leitura.nextLine());
 
-        var autoresVivos = autorRepository.buscarAutoresVivosNoAno(ano);
-        System.out.println("\n--- AUTORES VIVOS NO ANO DE " + ano + " ---");
-        if (autoresVivos.isEmpty()) {
-            System.out.println("Nenhum autor encontrado para este ano em nosso banco.");
-        } else {
-            autoresVivos.forEach(a -> System.out.println("Nome: " + a.getNome() + " | Nascimento: " + a.getAnoNascimento() + " | Falecimento: " + a.getAnoFalecimento()));
+            var autoresVivos = autorRepository.buscarAutoresVivosNoAno(ano);
+            System.out.println("\n--- AUTORES VIVOS NO ANO DE " + ano + " ---");
+            if (autoresVivos.isEmpty()) {
+                System.out.println("Nenhum autor encontrado para este ano em nosso banco.");
+            } else {
+                autoresVivos.forEach(a -> System.out.println("Nome: " + a.getNome() + " | Nascimento: " + a.getAnoNascimento() + " | Falecimento: " + a.getAnoFalecimento()));
+            }
+            System.out.println("---------------------------------------\n");
+
+        } catch (NumberFormatException e) {
+            System.out.println("\n❌ Erro: Por favor, digite um ano válido apenas com números (ex: 1800).\n");
         }
-        System.out.println("---------------------------------------\n");
     }
 
     private void listarLivrosPorIdioma() {
@@ -131,6 +135,8 @@ public class Principal {
             System.out.println("Nenhum livro encontrado com este idioma em nosso banco.");
         } else {
             livrosPorIdioma.forEach(l -> System.out.println("Título: " + l.getTitulo() + " | Autor: " + l.getAutor().getNome()));
+
+            System.out.println("\n📊 Quantidade de livros encontrados neste idioma: " + livrosPorIdioma.size());
         }
         System.out.println("---------------------------------\n");
     }
