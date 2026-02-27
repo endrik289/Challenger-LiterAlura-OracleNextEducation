@@ -29,13 +29,14 @@ public class Principal {
         var opcao = -1;
         while (opcao != 0) {
             var menu = """
-                    \n
-                    *** Bem-vindo ao LiterAlura ***
+                    \n*** Bem-vindo ao LiterAlura ***
                     Escolha o número de sua opção:
                     
                     1 - Buscar livro pelo título (e salvar)
                     2 - Listar livros registrados
                     3 - Listar autores registrados
+                    4 - Listar autores vivos em um determinado ano
+                    5 - Listar livros em um determinado idioma
                     0 - Sair
                     """;
 
@@ -44,15 +45,11 @@ public class Principal {
             leitura.nextLine();
 
             switch (opcao) {
-                case 1:
-                    buscarLivroWeb();
-                    break;
-                case 2:
-                    listarLivrosRegistrados();
-                    break;
-                case 3:
-                    listarAutoresRegistrados();
-                    break;
+                case 1: buscarLivroWeb(); break;
+                case 2: listarLivrosRegistrados(); break;
+                case 3: listarAutoresRegistrados(); break;
+                case 4: listarAutoresVivos(); break;
+                case 5: listarLivrosPorIdioma(); break;
                 case 0:
                     System.out.println("Saindo do LiterAlura... Até logo!");
                     break;
@@ -70,7 +67,6 @@ public class Principal {
 
         if (dados.resultados() != null && !dados.resultados().isEmpty()) {
             DadosLivro dadosLivro = dados.resultados().get(0);
-
             Autor autor = null;
             if (dadosLivro.autores() != null && !dadosLivro.autores().isEmpty()) {
                 var dadosAutor = dadosLivro.autores().get(0);
@@ -80,12 +76,10 @@ public class Principal {
                     autorRepository.save(autor);
                 }
             }
-
             try {
                 Livro livro = new Livro(dadosLivro);
                 livro.setAutor(autor);
                 livroRepository.save(livro);
-
                 System.out.println("\n✅ Livro encontrado e salvo no banco de dados!");
                 System.out.println("Título: " + livro.getTitulo());
                 System.out.println("Autor: " + (autor != null ? autor.getNome() : "Desconhecido"));
@@ -101,7 +95,7 @@ public class Principal {
     private void listarLivrosRegistrados() {
         var livros = livroRepository.findAll();
         System.out.println("\n--- LIVROS REGISTRADOS NO BANCO ---");
-        livros.forEach(l -> System.out.println("Título: " + l.getTitulo() + " | Idioma: " + l.getIdioma()));
+        livros.forEach(l -> System.out.println("Título: " + l.getTitulo() + " | Idioma: " + l.getIdioma() + " | Autor: " + l.getAutor().getNome()));
         System.out.println("-----------------------------------\n");
     }
 
@@ -110,5 +104,34 @@ public class Principal {
         System.out.println("\n--- AUTORES REGISTRADOS NO BANCO ---");
         autores.forEach(a -> System.out.println("Nome: " + a.getNome() + " | Nasc/Fale: " + a.getAnoNascimento() + "-" + a.getAnoFalecimento()));
         System.out.println("------------------------------------\n");
+    }
+
+    private void listarAutoresVivos() {
+        System.out.println("Digite o ano para buscar autores vivos:");
+        var ano = leitura.nextInt();
+        leitura.nextLine();
+
+        var autoresVivos = autorRepository.buscarAutoresVivosNoAno(ano);
+        System.out.println("\n--- AUTORES VIVOS NO ANO DE " + ano + " ---");
+        if (autoresVivos.isEmpty()) {
+            System.out.println("Nenhum autor encontrado para este ano em nosso banco.");
+        } else {
+            autoresVivos.forEach(a -> System.out.println("Nome: " + a.getNome() + " | Nascimento: " + a.getAnoNascimento() + " | Falecimento: " + a.getAnoFalecimento()));
+        }
+        System.out.println("---------------------------------------\n");
+    }
+
+    private void listarLivrosPorIdioma() {
+        System.out.println("Digite o idioma para busca (ex: en, pt, fr, es):");
+        var idioma = leitura.nextLine();
+
+        var livrosPorIdioma = livroRepository.findByIdioma(idioma);
+        System.out.println("\n--- LIVROS NO IDIOMA '" + idioma.toUpperCase() + "' ---");
+        if (livrosPorIdioma.isEmpty()) {
+            System.out.println("Nenhum livro encontrado com este idioma em nosso banco.");
+        } else {
+            livrosPorIdioma.forEach(l -> System.out.println("Título: " + l.getTitulo() + " | Autor: " + l.getAutor().getNome()));
+        }
+        System.out.println("---------------------------------\n");
     }
 }
