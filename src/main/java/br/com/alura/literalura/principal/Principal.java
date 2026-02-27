@@ -37,6 +37,9 @@ public class Principal {
                     3 - Listar autores registrados
                     4 - Listar autores vivos em um determinado ano
                     5 - Listar livros em um determinado idioma
+                    6 - Exibir estatísticas do banco de dados
+                    7 - Top 10 livros mais baixados
+                    8 - Buscar autor por nome
                     0 - Sair
                     """;
 
@@ -50,6 +53,9 @@ public class Principal {
                 case 3: listarAutoresRegistrados(); break;
                 case 4: listarAutoresVivos(); break;
                 case 5: listarLivrosPorIdioma(); break;
+                case 6: exibirEstatisticas(); break;
+                case 7: top10Livros(); break;
+                case 8: buscarAutorPorNome(); break;
                 case 0:
                     System.out.println("Saindo do LiterAlura... Até logo!");
                     break;
@@ -140,4 +146,49 @@ public class Principal {
         }
         System.out.println("---------------------------------\n");
     }
+
+    private void exibirEstatisticas() {
+        var livros = livroRepository.findAll();
+        if (livros.isEmpty()) {
+            System.out.println("\nNenhum livro no banco para gerar estatísticas.\n");
+            return;
+        }
+
+        // Usando DoubleSummaryStatistics conforme o desafio extra pediu!
+        java.util.DoubleSummaryStatistics est = livros.stream()
+                .filter(l -> l.getNumeroDeDownloads() != null)
+                .mapToDouble(Livro::getNumeroDeDownloads)
+                .summaryStatistics();
+
+        System.out.println("\n--- ESTATÍSTICAS DOS LIVROS SALVOS ---");
+        System.out.println("Média de downloads: " + Math.round(est.getAverage()));
+        System.out.println("Máximo de downloads: " + est.getMax());
+        System.out.println("Mínimo de downloads: " + est.getMin());
+        System.out.println("Total de livros avaliados: " + est.getCount());
+        System.out.println("--------------------------------------\n");
+    }
+
+    private void top10Livros() {
+        var livros = livroRepository.findTop10ByOrderByNumeroDeDownloadsDesc();
+        System.out.println("\n--- TOP 10 LIVROS MAIS BAIXADOS (BANCO DE DADOS) ---");
+        livros.forEach(l -> System.out.println("Título: " + l.getTitulo() + " | Downloads: " + l.getNumeroDeDownloads()));
+        System.out.println("----------------------------------------------------\n");
+    }
+
+    private void buscarAutorPorNome() {
+        System.out.println("Digite o nome do autor que deseja buscar:");
+        var nome = leitura.nextLine();
+
+        // Faz a busca no banco usando o comando que criamos no repositório
+        var autores = autorRepository.findByNomeContainingIgnoreCase(nome);
+
+        System.out.println("\n--- RESULTADO DA BUSCA DE AUTORES ---");
+        if (autores.isEmpty()) {
+            System.out.println("Nenhum autor encontrado com esse nome no banco de dados.");
+        } else {
+            autores.forEach(a -> System.out.println("Nome: " + a.getNome() + " | Nasc/Fale: " + a.getAnoNascimento() + "-" + a.getAnoFalecimento()));
+        }
+        System.out.println("-------------------------------------\n");
+    }
+
 }
